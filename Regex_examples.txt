@@ -1,0 +1,122 @@
+Tested on https://regex101.com/
+
+Recursive nested parentheses: Recursion is supported in PCRE 4.0 (Perl Compatible Regular Expressions){C, PHP}, Perl 5.10, Ruby 2+, Python (via alternate regex module); not JS
+
+\(((?:(?>[^()]+)|(?R))*)\)
+
+
+Explanation:
+/\(((?:(?>[^()]+)|(?R))*)\)/g
+  \( matches the character ( literally
+  1st Capturing group ((?:(?>[^()]+)|(?R))*)
+    (?:(?>[^()]+)|(?R))* Non-capturing group
+      Quantifier: * Between zero and unlimited times, as many times as possible, giving back as needed [greedy]
+      1st Alternative: (?>[^()]+)
+        (?>[^()]+) Atomic Group
+          [^()]+ match a single character not present in the list below
+            Quantifier: + Between one and unlimited times, as many times as possible, giving back as needed [greedy]
+            () a single character in the list () literally
+      2nd Alternative: (?R)
+        (?R) recurses the entire pattern
+  \) matches the character ) literally
+  g modifier: global. All matches (don't return on first match)
+
+Test:
+( 5 ( 1 ( 1 2 3 ) ( 3 ) ) )
+
+((123)(67))
+
+(zx)
+
+()
+
+(123)(456)
+
+Results:
+MATCH 1 
+1. [1-26] ` 5 ( 1 ( 1 2 3 ) ( 3 ) ) ` 
+MATCH 2 
+1. [30-39] `(123)(67)` 
+MATCH 3 
+1. [43-45] `zx` 
+MATCH 4 
+1. [49-49] `` 
+MATCH 5 
+1. [53-56] `123` 
+MATCH 6 
+1. [58-61] `456` 
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+Recursive nested comment blocks => /* comment */:
+\/\*((?:(?:(?>(?!\/\*|\*\/).)+)|(?R))*)\*\/ 
+
+
+Explanation:
+/\/\*((?:(?:(?>(?!\/\*|\*\/).)+)|(?R))*)\*\//g
+  \/ matches the character / literally
+  \* matches the character * literally
+  1st Capturing group ((?:(?:(?>(?!\/\*|\*\/).)+)|(?R))*)
+    (?:(?:(?>(?!\/\*|\*\/).)+)|(?R))* Non-capturing group
+      Quantifier: * Between zero and unlimited times, as many times as possible, giving back as needed [greedy]
+      1st Alternative: (?:(?>(?!\/\*|\*\/).)+)
+        (?:(?>(?!\/\*|\*\/).)+) Non-capturing group
+          (?>(?!\/\*|\*\/).)+ Atomic Group
+            Quantifier: + Between one and unlimited times, as many times as possible, giving back as needed [greedy]
+            (?!\/\*|\*\/) Negative Lookahead - Assert that it is impossible to match the regex below
+              1st Alternative: \/\*
+                \/ matches the character / literally
+                \* matches the character * literally
+              2nd Alternative: \*\/
+                \* matches the character * literally
+                \/ matches the character / literally
+            . matches any character (except newline)
+      2nd Alternative: (?R)
+        (?R) recurses the entire pattern
+  \* matches the character * literally
+  \/ matches the character / literally
+  g modifier: global. All matches (don't return on first match)
+
+Test:
+/* x
+test /* ccc /* dd */ */
+/*asdas*/
+ */
+fslkfjsdkl
+/*sldka*s/d;kl */
+
+Results:
+MATCH 1 
+1. [2-40] ` x
+test /* ccc /* dd */ */
+/*asdas*/
+ ` 
+MATCH 2 
+1. [56-69] `sldka*s/d;kl ` 
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+Simple comment block (non-nested; no recursion):
+\/\*((?:(?!\*\/).)*)\*\/\s*
+
+
+Explanation:
+/\/\*((?:(?!\*\/).)*)\*\/\s*/gs
+  \/ matches the character / literally
+  \* matches the character * literally
+  1st Capturing group ((?:(?!\*\/).)*)
+    (?:(?!\*\/).)* Non-capturing group
+      Quantifier: * Between zero and unlimited times, as many times as possible, giving back as needed [greedy]
+      (?!\*\/) Negative Lookahead - Assert that it is impossible to match the regex below
+        \* matches the character * literally
+        \/ matches the character / literally
+      . matches any character
+  \* matches the character * literally
+  \/ matches the character / literally
+  \s* match any white space character [\r\n\t\f ]
+    Quantifier: * Between zero and unlimited times, as many times as possible, giving back as needed [greedy]
+  g modifier: global. All matches (don't return on first match)
+  s modifier: single line. Dot matches newline characters
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
