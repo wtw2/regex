@@ -120,3 +120,14 @@ Explanation:
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 
+Find double quotes that do not conform to string indicators (start and end of string) for CSV files: (this does work in Notepad++)
+((?:(?<=[^,\t\n\\])\"(?=[^,\t\n\r]))+)
+
+“\n” = is the line-feed character, not just any new line terminator (NotePad++)
+“\r” = carriage return
+So for compatibility with both DOS and Unix styles, include both as a possible following charcter.
+Find one or more double quotes (capture all if multiple), not preceeded by a comma, tab, new_line or backslash (escaped) AND not followed by a comma, tab or new_line or carriage_return
+This does not check for matched double quotes; proper CSV syntax is presumed
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
